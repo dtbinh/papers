@@ -1,0 +1,11 @@
+plot(0.1:0.1:5,G5,'-r','LineWidth',2);hold
+plot(0.1:0.1:5,G6,'-k','LineWidth',2)
+plot(0.1:0.1:5,G8,'-y','LineWidth',2)
+plot(0.1:0.1:5,G10,'-g','LineWidth',2)
+%plot(0.1:0.1:5,G12)
+%plot(0.1:0.1:5,G15)
+plot(0.1:0.1:5,G20,'-c','LineWidth',2)
+plot(0.1:0.1:5,G40,'-b','LineWidth',2)
+plot(0.1:0.1:5,Nash,'-m','LineWidth',2)
+legend('k=5','k=6','k=8','k=10','k=20','k=40','Nash')
+xlabel('r');ylabel('\eta');
