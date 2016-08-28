@@ -1,4 +1,4 @@
-\documentclass[12pt,draftcls,onecolumn]{IEEEtran}  % Comment this line out if you need a4paper
+\documentclass[10pt,doublecolumn]{IEEEtran}  % Comment this line out if you need a4paper
 %\documentclass[a4paper, 10pt, conference]{ieeeconf}      % Use this line for a4 paper
 
 \usepackage{epsfig}
@@ -113,12 +113,25 @@ holds for at least one $i\in\{1,\cdots,N\}$.} The Pareto optimality can be inter
 \section{Open-Loop Nash Analysis for Homogeneous Agents}
 We consider homogeneous time varying discrete time agents' dynamics:
 \begin{align*}
-&\dot{x}_i(t)=A(t)x_i(t)+B(t)u_i(t)\\
-&y_{i}(t)=C(t)x_i(t)
+&\dot{x}_i(t)=A_i(t)x_i(t)+B_i(t)u_i(t)\\
+&y_{i}(t)=C_i(t)x_i(t)
 \end{align*}
-where $y_i\in\mathbf{R}^m$ is the output state of agent $i$ that needs to be coordinated with other agents, such as velocity, position, etc. The initial state $x_i(0)$ is usually known to agent $i$ only. The objective of a coordination problem is generally equivalent to minimizing by the following performance index
+where $y_i\in\mathbf{R}^m$ is the output state of agent $i$ that needs to be coordinated with other agents, such as velocity, position, etc. The initial state $x_i(0)$ is usually known to agent $i$ only. To further simplify the problem, we define a new state vector as
+\begin{equation}
+z_i=C_i(t)\Phi_i(t_f,t)x_i(t)\label{zi}
+\end{equation}
+where $\Phi_i(t_f,t)=e^{A_i(t_f-t)}$ is the state-transition matrix. Differentiating the above equation with
+respect to $t$ yields:
 \begin{align}
-J_i=&\frac{1}{2}\sum_{e_{ij}\in\mathcal{E}} \|y_i(t_f)-y_j(t_f)-\mu_{ij}\|^2_{F_{ij}} +\frac{1}{2}\int_{0}^{t_f} \|u_i(t)\|^2_{R_i(t)}dt \label{JiFormation}
+\dot{z}_i=&C_i\dot{\phi}_ix_i+C_i\phi_i\dot{x}_i \notag\\
+=&B_iu_i ,\label{zidot}
+\end{align}
+where $B'_i=C_i\phi_i(t_f,t)B_i$.
+
+The objective of a coordination problem among multiple agents is generally equivalent to minimizing by the following performance index
+\begin{align}
+J_i=&\frac{1}{2}\sum_{e_{ij}\in\mathcal{E}} [y_i(t_f)-y_j(t_f)-\mu_{ij}]^TF_{ij}[y_i(t_f)-y_j(t_f)-\mu_{ij}]\notag \\
+&+\frac{1}{2}\int_{0}^{t_f} u_i^TR_iu_idt \label{JiFormation}
 \end{align}
 for $i=1,\cdots,N$, where $\mu_{ij}$ is a prescribed vector by the coordination problem, matrix $F_{ij}$ is positive-semi definite, and matrix $R_i(t)$ is positive definite for all $t\in[0,t_f]$. Minimizing performance index $J_i$ means that every agent will try to minimize its total coordination error measured locally according to the graph while at the same time minimizing its total control energy in the game. To facilitate Nash strategy analysis for the formulated multi-agent coordination problem, we define a matrix weighted Laplacian based on network topology and agents' performance indices.
 \begin{Def}
@@ -131,41 +144,56 @@ L_{ij}=\left\{\begin{array}{ll}
 \end{array}\right..\label{laplacian}
 \end{equation}
 \end{Def}
+
+
+
+
 The open-loop Nash equilibrium for the formulated problem is presented as follows.
 \begin{thm}
 For the $N$-agent linear quadratic differential game of fixed duration $[0,t_f]$ defined by agents' dynamics (\ref{systemxi}) and performance indices (\ref{JiFormation}), if the information structure of every agent is open-loop, i.e., $U_i=\{u_i(t,x(0))\in \mathbf{R}^r \mid t\in[0,t_f]\}$, there exists a unique Nash equilibrium where corresponding open-loop control strategy vector $u^*_i$ is given by
 \begin{align}
-&u_i^*(t,x(0))=-R_i^{-1}B^T [e_i\otimes\Phi^T(t_f,t)] \{L(I+DL)^{-1}[\Phi(t_f,0)x(0)+D\mu]-\mu\}\label{uNash}
+&u_i^*=-R_i^{-1}B^T [e_i\otimes\Phi^T(t_f,t)] \{L(I+DL)^{-1}\notag\\
+&[\Phi(t_f,0)x(0)+D\mu]-\mu\}\label{uNash}
 \end{align}
-if matrix $(I+DL)$ is invertible, where
+if matrix $(I+DL)$ is invertible, where $e_i$ is a vector with the $i$th entry being 1 and elsewhere 0
 \begin{align}
-R=&blkdiag\{R_1,\cdots,R_N\},\\
-D=&blkdiag\{D_1,\cdots,D_N\}, \\
-D_i=&\int^{t_f}_0\Phi(t_f,\tau)BR_i^{-1}B^T\Phi^T(t_f,\tau) dt
-\label{Di} \\
-x=&[x_1^T, \cdots, x_N^T]^T,\\
-\mu=&\left[\sum_{e_{1j}\in{\mathcal{E}}}\mu^T_{1j},\cdots, \sum_{e_{Nj}\in{\mathcal{E}}}\mu^T_{Nj}\right]^T,
+D=&\begin{bmatrix}
+D_1&&\\
+&\ddots&\\
+&&D_N
+\end{bmatrix},
+x=\begin{bmatrix}
+x_1\\
+\vdots\\
+ x_N
+\end{bmatrix},
+\mu=\begin{bmatrix}
+\sum_{e_{1j}\in{\mathcal{E}}}\mu^T_{1j}\\
+\vdots\\
+\sum_{e_{Nj}\in{\mathcal{E}}}\mu^T_{Nj}
+\end{bmatrix},\notag\\
+D_i=&\int^{t_f}_0\Phi(t_f,\tau)B_iR_i^{-1}B_i^T\Phi^T(t_f,\tau) dt
+.\label{Di} 
 \end{align}
-$e_i$ is a unit vector with the $i$th entry being 1 and elsewhere 0, and $\Phi(t_f,t)$ is the state-transition matrix of $A$.
 \end{thm}
 
 \begin{proof}
 We define the Hamiltonian for agent $i$ as
 \begin{align}
-H_i=&\frac{1}{2}\|u_i\|^2_{R_i}+ \lambda_{i}^T(Ax_i+Bu_i)
+H_i=&\frac{1}{2}u_i^TR_iu_i+ \lambda_{i}^T(A_ix_i+B_iu_i)
 \end{align}
 where vector $\lambda_i$ is the Lagrangian multiplier. Necessary conditions for the existence of open-loop Nash equilibria are
 \begin{subequations}\begin{align}
-\dot{x}_{i}=&\frac{\partial H_i}{\partial \lambda_{i}}=Ax_i+Bu_i,\label{Nec1}\\ 
+\dot{x}_{i}=&\frac{\partial H_i}{\partial \lambda_{i}}=A_ix_i+B_iu_i,\label{Nec1}\\ 
 \dot{\lambda}_{i}=&-\frac{\partial H_i}{\partial x_{i}}= -A_i^T\lambda_i,\label{Nec2}\\
-\lambda_{i}(t_f)=& \sum_{e_{ij}\in\mathcal{E}} C^TF_{ij}[y_i(t_f)-y_j(t_f)-\mu_{ij}]\notag\\
+\lambda_{i}(t_f)=& \sum_{e_{ij}\in\mathcal{E}} C_i^TF_{ij}C_i[x_i(t_f)-x_j(t_f)-\mu_{ij}]\notag\\
 =& \sum_{e_{ij}\in\mathcal{E}} L_{ij}[x_i(t_f)-x_j(t_f)]-\mu_i,\label{Nec3}\\
 \frac{\partial H_i}{\partial u_i}=&R_iu_i+B^T_i\lambda_i =0,\label{Nec4}
-\end{align}
+\end{align}\label{Nec}
 \end{subequations}
 for all $i=1,\cdots,N$, where $\mu_i=\sum_{e_{ij}\in\mathcal{E}}C^TF_{ij}\mu_{ij}$. Therefore, the existence of the Nash equilibria is equivalent to the solvability of above equations given initial states $x_i(0)$ for all $i=1,\cdots,N$. The uniqueness of Nash equilibrium is equivalent to the uniqueness of the solution to conditions (\ref{Nec1}) to (\ref{Nec4}). From (\ref{Nec2}), the trajectory of $\lambda_i$ can be obtained as
-\[\lambda_i(t)=\Phi^T(t_f,t)\lambda_i(t_f)\]
-where . From (\ref{Nec4}), the control vector can be obtained as
+\[\lambda_i(t)=\Phi_i^T(t_f,t)\lambda_i(t_f)\]
+where $\Phi(t_f,t) = e^{A(t_f-t)}$. From (\ref{Nec4}), the control vector can be obtained as
 \begin{align}
 u_i(t)=-R_i^{-1}B^T\lambda_i(t),\label{ulambda}
 \end{align}
@@ -180,39 +208,43 @@ where $D_i$ is defined in (\ref{Di}). Based on definition of $L$ in (\ref{laplac
 where $\lambda_v=[\lambda_{v1},\cdots,\lambda_{vN}]^T$. Stacking equation (\ref{closedloop}) from $i=1$ to $i=N$ yields
 \begin{align*}
 x(t_f)=&[I_N\otimes \Phi(t_f,0)]x(0)-D\lambda(t_f)\\
-=&[I_N\otimes \Phi(t_f,0)]x(0)-D(Lx(t_f)-\mu)
+=&[I_N\otimes \Phi(t_f,0)]x(0)-D(Lx(t_f)-\mu)\\
+(I+DL)x(t_f)=&[I_N\otimes\Phi(t_f,0)]x(0)+D\mu
 \end{align*}
-where $x=[x^T_{1},\cdots,x^T_{N}]^T$, and $L$ is defined in (\ref{laplacian}). The relationship between $x(t_f)$ and $x(0)$ can be expressed as
+where $x=[x^T_{1},\cdots,x^T_{N}]^T$, and $L$ is defined in (\ref{laplacian}). If matrix $(I+DL)$ is invertible, then the above equation becomes
 \begin{equation}
-(I+DL)x(t_f)=[I_N\otimes\Phi(t_f,0)]x(0)+D\mu\label{pfp0}
+x(t_f)=(I+DL)^{-1}\{[I_N\otimes\Phi(t_f,0)]x(0)+D\mu\}\label{pfp0}
 \end{equation}
-If matrix $(I+DL)$ is invertible, control vector (\ref{ulambda}) can be now expressed as
+Given the above fact, control vector (\ref{ulambda}) can be expressed as
 \begin{align}
 \lambda_i(t)=& \Phi^T(t_f,t)\lambda_i(t_f)\notag\\
 =&[e_i\otimes\Phi^T(t_f,t)]\lambda(t_f)\notag\\
 =& [e_i\otimes\Phi^T(t_f,t)] [Lx(t_f)-\mu]\notag\\
-=& [e_i\otimes\Phi^T(t_f,t)] \{L(I+DL)^{-1}[\Phi(t_f,0)x(0)+D\mu]-\mu\}\label{ulamdapv}
-%=& -R_i^{-1}B^T [e_i\otimes\Phi^T(t_f,t)] \{L(I+DL)^{-1}\Phi(t_f,0)x(0)+[L(I+DL)^{-1}D-I]\mu\}.
+=& [e_i\otimes\Phi^T(t_f,t)] \{L(I+DL)^{-1}[\Phi(t_f,0)x(0)+D\mu]\notag\\
+&-\mu\}\label{ulamdapv}\notag\\
+=& [e_i\otimes\Phi^T(t_f,t)] \{L(I+DL)^{-1}\Phi(t_f,0)x(0)\notag\\
+&+[L(I+DL)^{-1}D-I]\mu\}
 \end{align}
-Substituting the above expression into equation (\ref{ulambda}) yields (\ref{uNash}). Therefore, the open-loop Nash equilibrium exists and is unique.
+where $e_i$ is a vector with the $i$th position being 1 and elsewhere 0. Substituting the above expression into equation (\ref{ulambda}) yields (\ref{uNash}). Therefore, the open-loop Nash equilibrium exists and is unique.
 \end{proof}
 
 
 It is obvious that computing and implementing open-loop Nash strategy (\ref{uNash}) requires agent $i$ to have knowledge of full initial state vector $x(0)$ which conflicts with communication constraint of multi-agent system that each agent is only aware of information from local agents. In fact, we are able to overcome this difficulty by carrying out distributed estimation under certain spectral condition of matrix $(I+DL)$. The basic idea is as follows: with every agent having an estimate of its actual open-loop Nash strategy, we let all agents exchange their estimates over time in a distributed manner based on given network topology to achieve asymptotic convergence of the estimates to the corresponding actual open-loop Nash strategies. Toward that, we have the following result.
 \begin{thm}\label{Thm1}
-If all eigenvalues of matrix $(I+DL)$ have positive real parts, then $\hat{u}_i$ converges to open-loop Nash strategy $u^*_i$ in (\ref{uNash}), that is,
-\begin{equation}
-\lim_{\tau\rightarrow\infty}\hat{u}_i(t, x_i(0), \tau) = u^*_i(t,x(0))\label{limit}
-\end{equation}
-for all $i=1,\cdots,N$ given
+given
 \begin{align}
-\hat{u}_i(t,x_i(0),\tau) =&-R_i^{-1}B^T\sum_{e_{ij}\in\mathcal{E}}L_{ij}[\hat{x}_{if}(\tau)-\hat{x}_{jf}(\tau)]-\mu_i,\label{NashEstimate}
+\hat{u}_i(t,x_i(0),\tau) =&-R_i^{-1}B^T\sum_{e_{ij}\in\mathcal{E}}L_{ij}[\alpha_i(\tau)-\alpha_j(\tau)]-\mu_i,\label{NashEstimate}
 \end{align}
 where $\hat{x}_{if}$ satisfies
 \begin{align}
-\dot{x}_{if}(\tau)=&g_i\left\{\Phi(t_f,0)x_i(0)-x_i(t_f)(\tau)-D_i\sum_{e_{ij}\in\mathcal{E}}L_{ij}[x_i(t_f)(\tau)-x_{jf}(\tau)]+D_i\mu_i\right\},\label{update}
+\dot{x}_{if}(\tau)=&g_i\{\Phi(t_f,0)x_i(0)-x_i(t_f)(\tau)\notag\\
+&-D_i\sum_{e_{ij}\in\mathcal{E}}L_{ij}[x_i(t_f)(\tau)-x_{jf}(\tau)]+D_i\mu_i\}\label{update}
 \end{align}
-for all $i=1,\cdots,N$, where $g_i$ is a positive scalar.
+for all $i=1,\cdots,N$, where $g_i$ is a positive scalar. If all eigenvalues of matrix $(I+DL)$ have positive real parts, then $\hat{u}_i$ converges to open-loop Nash strategy $u^*_i$ in (\ref{uNash}), that is,
+\begin{equation}
+\lim_{\tau\rightarrow\infty}\hat{u}_i(t, x_i(0), \tau) = u^*_i(t,x(0))\label{limit}
+\end{equation}
+for all $i=1,\cdots,N$ 
 \end{thm}
 \begin{proof}
 Stacking equations (\ref{update}) for $i=1,\cdots,N$ yields
@@ -226,215 +258,24 @@ In the above theorem, variable $\hat{u}_i(\tau)$ can be in fact regarded as an e
 
 Implementing equation (\ref{update}) is indeed distributed because it is based on each agent's own performance index and information received from local agents only. Specifically, at time $\tau$, agent $i$ only needs to send out its own estimate variable $x_i(t_f)(\tau)$ to agent $j$ for all $e_{ij}\in\mathcal{E}$ and receive $x_{jf}(\tau)$ from agent $j$ for all $e_{ji}\in\mathcal{E}$. In equation (\ref{update}), scalar coefficient $g_i$ determines the convergence rate and a large value of $g_i$ results in faster convergence.
 
-As we can see, in order to make distributed open-loop Nash strategy estimation valid, all eigenvalues of matrix $(I+DL)$ need to have positive real parts. In general, this condition needs to be validated on a case by case basis based on agents' dynamics, performance indices, and graph connectivity. Nonetheless, there still exist several special cases where
-spectral property of $(I+DL)$ can be simply analyzed based on the structure of $D$ and $L$. These scenarios are summarized as follows.
-\begin{Pro}
-All eigenvalues of $(I+DL)$ have positive real parts if either of the following holds
-\begin{itemize}
-\item[(1)] Graph $\mathcal{G}$ is undirected and $F_{ij}=F_{ji}$ for all $e_{ij}\in\mathcal{E}$. 
-\item[(2)] Graph $\mathcal{G}$ is directed and weighting matrices for terminal state and control energy can be expressed as $F_{ij}=f_{ij}\bar{F}$ for all $e_{ij}\in\mathcal{E}$ and $R_i=r_i\bar{R}$ for all $i=1,\cdots,N$, respectively, where $f_{ij}$ and $d_i$ are positive scalars and matrix $\bar{F}$ and $\bar{R}$ are positive semi-definite.  
-\end{itemize} 
-\end{Pro}
-\begin{proof}
-For scenario (1), if graph $\mathcal{G}$ is undirected, matrix $L$ defined in (\ref{laplacian}) is positive semi-definite because
-\[x^TLx =\frac{1}{2}\sum_{e_{ij}\in\mathcal{E}}\|x_i-x_j\|^2_{C^TF_{ij}C}\geq 0.\]
-Since matrix $D$ is positive semi-definite, it can be written as $D=D^T_sD_s$. Moreover, eigenvalues of $DL=D_s^TD_sL$ are equivalent to these of $D_sLD_s^T$ using the fact that $E_1E_2$ and $E_2E_1$ have the same eigenvalues for square matrix $E_1$ and $E_2$. Since $D_sLD_s^T$ is positive semi-definite, product $DL$ has non-negative eigenvalues and hence eigenvalues of $(I+DL)$ are positive. 
-
-For scenario (2), if $F_{ij}=f_{ij}\bar{F}$, matrix weighted Laplacian matrix $L$ can be expressed as $L=\bar{L}\otimes \bar{F}$ where $\bar{L}$ is the conventional scalar weighted Laplacian matrix for graph $\mathcal{G}$ with weights $f_{ij}$ on edge $e_{ij}\in\mathcal{E}$. If $R_i=r_i\bar{R}$, block matrix $D$ can be written as $D=diag\{r_1,\cdots,r_N\}\otimes \bar{D}$ where $\bar{D}$ denotes the result of (\ref{Di}) when $R_i=r_i\bar{R}$. Therefore, product $(I+DL)$ can be expressed as
-\begin{align}
-I+DL=&I+(diag\{r_1,\cdots,r_N\}\otimes \bar{D})(\bar{L}\otimes \bar{F})\notag\\
-=&I+\bar{L}_r\otimes(\bar{D}\bar{F})\notag,
-\end{align}
-where $\bar{L}_r=diag\{r_1,\cdots,r_N\}\bar{L}$. As shown previously, product $\bar{D}\bar{F}$ has non-negative eigenvalues because $\bar{D}$ and $\bar{F}$ are both positive semi-definite. Moreover, it is well known that all eigenvalues of scalar weighted Laplacian matrix $\bar{L}$ or $\bar{L}_d$ have non-negative real parts parts. Therefore, according to its spectrum property, Kronecker product $\bar{L}_r\otimes(\bar{D}\bar{F})$ has non-negative real parts and hence eigenvalues of $(I+DL)$ have positive real parts.
-\end{proof}
-
-Physical interpretations of the above two scenarios are given as follows: In scenario (1), communication between two connected agents on the graph is bidirectional and these pair of agents have the common weighting matrix ($F_{ij}=F_{ji}$) associated with their terminal output variable difference. In scenario (2), communication between two connected agents on the graph is directional and all agents in fact choose weighting scalars $f_{ij}$ and $r_i$ (instead of matrices) associated with their terminal output variable difference and control energy. 
-
 If all eigenvalues of $(I+DL)$ are verified to have positive real parts, next problem to consider is how to implement or synthesize open-loop Nash strategy in real applications. There are basically two types of implementations: One is offline and the other is online. For an offline implementation, we let all agents collaboratively communicate with each other and carry out differential equation (\ref{update}) over an adequate amount of time, say $\tau_f$, such that estimate $\hat{u}_i(\tau_f)$ is close enough to open-loop Nash strategy $u_i^*$, or equivalently, variable change $\|\dot{x}_{if}(\tau_f)\|$ in (\ref{update}) is below a prescribed threshold. Each agent will then implement $\hat{u}_i(\tau_f)$ as its control strategy in the game. The advantage of an offline implementation is that it provides arbitrary accuracy of estimate $\hat{u}_i$ to the actual open-loop Nash strategy. The disadvantages of such an implementation is that it requires a ``warm-up'' time $\tau_f$ and all agents have to know and agree on the value of $\tau_f$. For an online implementation, all agents carry out equation (\ref{NashEstimate}) and (\ref{update}) simultaneously once game starts. The resulting control strategies can be expressed as follows:.
 \begin{subequations}\label{OpenLoopNashAlgorithm}
 \begin{align}
-\dot{x}_{if}(t)=&g_i\{\Phi(t_f,0)x_i(0)-x_i(t_f)(t)-D_i\sum_{e_{ij}\in\mathcal{E}}L_{ij}[x_i(t_f)(t)-x_{jf}(t)]+D_i\mu_i\} \label{OpenLoopNashAlgorithm2}\\
-\hat{u}_i(t) =&-R_i^{-1}B^T\sum_{e_{ij}\in\mathcal{E}}L_{ij}[\hat{x}_{if}(t)-\hat{x}_{jf}(t)]-\mu_i,\label{OpenLoopNashAlgorithm1}
+\dot{s}_i(t)=&g_i\{\Phi(t_f,0)x_i(0)-s_i(t)-D_i\sum_{e_{ij}\in\mathcal{E}}L_{ij}[s_i(t)\notag\\
+ &-s_j(t)]+D_i\mu_i\} \label{OpenLoopNashAlgorithm2}\\
+\hat{u}_i(t) =&-R_i^{-1}B^T\sum_{e_{ij}\in\mathcal{E}}L_{ij}[s_{i}(t)-s_{j}(t)]-\mu_i,\label{OpenLoopNashAlgorithm1}
 \end{align}
 \end{subequations}
 for all $i=1,\cdots,N$. The advantages of an online implementation is that it does not require any ``warm-up'' time and is suitable for real-time applications. The disadvantage of such an implementation is that the resulting trajectory of $\hat{u}_i$ in (\ref{OpenLoopNashAlgorithm1}) over entire game interval $[0,t_f]$ is generally less accurate to actual open-loop Nash strategy than the offline one. To quantify this inaccuracy, the concept of $\epsilon$-Nash equilibrium is introduced as follows. 
 \begin{Def}
 For a given scalar $\epsilon$, strategies $u^{\epsilon}_{1},\cdots,u^{\epsilon}_N$ form an open-loop $\epsilon$-Nash equilibrium if inequality
 \begin{equation}
-J_{i}(u_1^{\epsilon},\cdots,u^{\epsilon}_i,\cdots,u^{\epsilon}_N)\leq \min_{u_i\in U_i}J_{i}(u_1^{\epsilon},\cdots,u_i,\cdots,u^{\epsilon}_N)+\epsilon\label{epsilon1Nashinequality}
+J_{i}(u_1^{\epsilon},\cdots,u^{\epsilon}_i,\cdots,u^{\epsilon}_N)\leq J_{i}(u_1^{\epsilon},\cdots,u_i,\cdots,u^{\epsilon}_N)+\epsilon\label{epsilon1Nashinequality}
 \end{equation}
 holds for all $i=1,\cdots,N$, where $U_i$ is the open-loop control set for agent $i$, i.e., $U_i=\{u_i(t,x(0))\in \mathbf{R}^r \mid t\in[0,t_f]\}$.
 \end{Def}
 
-If $\epsilon=0$, the above definition becomes exactly the same as the one for open-loop Nash equilibrium and hence $u^\epsilon_i=u^*_i$. Intuitively, as $\epsilon$ decreases, $\epsilon$-Nash equilibrium will be close to the original Nash equilibrium. Therefore, the value of $\epsilon$ can be used to measure the closeness of online implementation control strategy $\hat{u}_i$ in (\ref{OpenLoopNashAlgorithm1}) to $u^*_i$ in (\ref{uNash}). Toward that end, we show that $\hat{u}_1,\cdots,\hat{u}_N$ form an $\epsilon$-Nash equilibrium with the value of $\epsilon$ explicitly derived. 
-
-First of all, we present the following lemmas:
-\begin{Lem}\label{LemmaEigen}
-All the eigenvalues of matrix
-\begin{equation}
-S_{jj}=(d_j^T\otimes I_r)S_jD_j^T\tilde{F}_j(d_j\otimes I_r)\label{dSkd}
-\end{equation}
-has nonnegative real parts for all $j=1,\cdots,N$ where matrix $S_j$ is
-defined in (\ref{Sk}).
-\end{Lem}
-\begin{proof}
-Substituting (\ref{Sk}) into (\ref{dSkd}) yields
-\begin{align*}
-S_{jj}=(d_j^T\otimes I_r)S_j(d_j\otimes I_r)=(d_j^T\otimes I_r) \int^{t_f}_0
-\tilde{B}_j(t)R_j^{-1}(t)\tilde{B}_j^T(t) \mbox{d}t
-D_j^T\tilde{F}_j(d_j\otimes I_k).
-\end{align*}
-Due to the definition of $D_j$ in (\ref{Di}) and $\tilde{B}_j=(d_j\otimes
-I_r)B'_j$, the above equation becomes
-\begin{align*}
-S_{jj}=\underbrace{\int^{t_f}_0 B'_j(t)R_j^{-1}(t)(B'_j)^T(t)\mbox{d}t}_a
-\underbrace{ (d_j^T\otimes I_r)\tilde{F}_j(d_j\otimes I_k)}_b.
-\end{align*}
-Since both term $a$ and term $b$ are positive semi-definite, all the
-eigenvalues of matrix $S_{jj}$ have nonnegative real parts.
-\end{proof}
-
-\begin{Lem}\label{norminequality}
-If $(-M)$ is Hurwitz for matrix $M$ defined in (\ref{M}), supposing that matrix $P$ is the unique positive definite solution to the Lyapunov equation
-\begin{equation}
--M^TP-PM=-I,\label{lyapunov}
-\end{equation}
-then for linear system
-\begin{equation}
-\dot{\theta}=-gM\theta\label{theta}\\
-\end{equation}
-with the initial state $\theta(0)$, the inequalities
-\begin{subequations}\label{thetainequalitytotal}
-\begin{align}
-&\int^{t_f}_0\|\theta\|_2^2\mbox{d}t\leq \frac{2\gamma_{\max}V(0)}{g\gamma_{\min}} (1-e^{-g\gamma_{\min}t_f}),\label{thetainequality2}\\
-&\int^{t_f}_0\|\theta\|_2\mbox{d}t\leq  \frac{2\sqrt{2\gamma_{\max}V(0)}}{g\gamma_{\min}} (1-e^{-g\gamma_{\min}t_f/2})\label{thetainequality}.
-\end{align}
-\end{subequations}
-hold, where $\|\cdot\|_2$ stand for Euclidean norm, $V(0)=1/2\theta^T(0)P\theta(0)$, $\gamma_{\min}=1/\lambda_{\max}(P)$, $\lambda_{\max}(P)$ is the largest eigenvalue of matrix $P$, $\gamma_{\max}=1/\lambda_{\min}(P)$, and $\lambda_{\min}(P)$ is the smallest eigenvalue of matrix $P$.
-\end{Lem}
-\begin{proof}
-If matrix $(-M)$ is Hurwitz, we consider the quadratic Lyapunov function $V=1/2\theta^TP\theta$ for system (\ref{theta}), where matrix $P$ is the solution to the Lyapunov equation (\ref{lyapunov}). The derivative of the Lyapunov function along the trajectory of system (\ref{theta}) is
-\[\dot{V}=\frac{1}{2}\theta^T(-gM^TP-gPM)\theta= -\frac{g}{2}\|\theta\|^2_2\leq -\frac{g}{2\lambda_{\max}(P)}\theta^TP\theta= -g\gamma_{\min} V\]
-where the last inequality is due to the property $\theta^TP\theta\leq \lambda_{\max}(P)\|\theta\|_2^2$. The above differential inequality yields
-\begin{align*}
-&\frac{1}{2}\lambda_{\min}(P)\|\theta\|_2^2\leq \frac{1}{2}\theta^TP\theta=V(t)\leq e^{ -g\gamma_{\min} t}V(0)\quad
-\Longrightarrow\quad \|\theta\|^2_2\leq 2\gamma_{\max}e^{ -g\gamma_{\min} t}V(0).
-\end{align*}
-Therefore, integrating the above inequality from $0$ to $t_f$ yields (\ref{thetainequality2}) and the square root of the above inequality from $0$ to $t_f$ yields (\ref{thetainequality}).
-\end{proof}
-
-\begin{Lem}
-Under strategy , $\Delta x_i$ can be expressed as
-\end{Lem}
-\begin{proof}
-Since $\Delta x_i(t_f)=x_i(t_f)-x_i^*(t_f)$, we need to find expressions for both $x_i(t_f)$ and $x_i^*(t_f)$. For $x_i(t_f)$, we solve differential equation (\ref{stacked}) as
-\[\dot{x}_{f}(\tau)=G\left\{[I_N\otimes\Phi(t_f,0)]x(0)-(I+DL)x_f(\tau)+D\mu\right\},\]
-\begin{equation}
-z^f(t)=M^{-1}z(0)+\theta(t).\label{zfsolution}
-\end{equation}
-where $\theta(t)$ is defined in (\ref{theta}) with the initial state $\theta(0)=z^f(0)-M^{-1}z(0)$. The system dynamics
-(\ref{dynamiczi}) when every agent chooses strategy
-(\ref{OpenLoopNashAlgorithm2}) becomes
-\begin{equation}
-\dot{z}= -\sum^N_{j=1}\tilde{B}_jR^{-1}_j\tilde{B}_j^T
-D_i^T\tilde{F}_jD_jz^f\triangleq -Wz^f\label{zdotzf}
-\end{equation}
-where $W$ is defined in (\ref{Wmax}). Substituting (\ref{zfsolution}) into
-(\ref{zdotzf}) yields
-\begin{equation}
-\dot{z}=-WM^{-1}z(0)-W\theta.  \label{zdotzfz0}
-\end{equation}
-Since
-\[\int^{t_f}_0W\mbox{d}t=\sum^N_{j=1}S_jF_j\]
-where matrices $F_j$ and $S_j$ are defined in (\ref{Fi}) and (\ref{Sk}),
-integrating equation (\ref{zdotzfz0}) from $0$ to $t_f$ yields
-\begin{equation}
-z(t_f)=\left(I-\sum^N_{j=1}S_jF_jM^{-1}\right)z(0)
--\int^{t_f}_0W\theta\mbox{d}t. \label{xtf}
-\end{equation}
-Recalling the definition of matrix $M$ in (\ref{M}), we have
-\[\left(I+\sum^N_{j=1}S_jF_j\right)M^{-1} =I\quad\Longrightarrow\quad
-M^{-1}=I-\sum^N_{j=1}S_jF_jM^{-1}.\]
-Hence, equation (\ref{xtf}) becomes
-\begin{equation}
-z(t_f)=M^{-1}z(0) -\int^{t_f}_0W\theta\mbox{d}t. \label{xtf1}
-\end{equation}
-%and
-%\[x_j(t_f)=(d_i^T\otimes I_n)(I+S)^{-1}x(0)-(d_i^T\otimes
-%I_n)\int^{t_f}_0We^{-K(I+S)t}\mbox{d}t[\alpha(0)-(I+S)^{-1}x(0)]\]
-Second, substituting $u^*_i$ in (\ref{uibest}) into (\ref{zidot}) yields
-\[\dot{z}^*_i=-(d_i^T\otimes
-I_r)\tilde{B}_iR_i^{-1}\tilde{B}_i^TD_i^T\tilde{F}_i \left[
-D_iz(t_f)-(d_i\otimes I_r)\Delta z_i(t_f)\right]\]
-Integrating the above equation from $0$ to $t_f$ yields
-\begin{align*}
-z_i^*(t_f)=&z_i(0)-(d_i^T\otimes I_r)S_iD_i^T\tilde{F}_i\left[
-D_iz_i(t_f)-(d_i\otimes I_r)\Delta z_i(t_f)\right]\\
-=&z_i(0)+S_{ii}\Delta z_i(t_f)-(d_i^T\otimes I_r)S_iF_iz(t_f)
-\end{align*}
-where $S_{ii}$ is as defined in (\ref{dSkd}). Therefore, substituting the
-above equation into the expression of $\Delta z_i(t_f)$ yields
-\begin{align*}
-\Delta z_i(t_f)=&z_i(t_f)-z_i^*(t_f)=z_i(t_f)-z_i(0)-S_{ii}\Delta
-z_i(t_f)+(d_i^T\otimes I_r)S_iF_iz(t_f)
-\end{align*}
-After some manipulations, we arrive at
-\begin{align*}
-(I+S_{ii})\Delta z_i(t_f)=&(d_i^T\otimes I_n)[Mz(t_f)-z(0)]
-\end{align*}
-As we showed in Lemma \ref{LemmaEigen}, all the eigenvalues of $S_{ii}$ in the
-right hand side of the above equation have nonnegative real parts and hence
-matrix $(I+S_{ii})$ is invertible. Therefore,
-\begin{equation}
-\Delta z_i(t_f)=(I+S_{ii})^{-1}(d_i^T\otimes I_r)\left[Mz(t_f)-z(0)\right]
-\label{Deltazitf}
-\end{equation}
-Therefore, substituting (\ref{xtf1}) into (\ref{Deltazitf}) yields the value
-of $\Delta z_i(t_f)$ as follows:
-\begin{align}
-\Delta z_i(t_f)=&-(I+S_{ii})^{-1}(d_i^T\otimes
-I_r)M\int^{t_f}_0W\theta \mbox{d}t .\label{Deltazitf1}
-\end{align}
-\end{proof}
-
-
-\begin{Lem}
-$\Delta u_i$
-\end{Lem}
-\begin{proof}
-The value of $\Delta u_i$ obtained as follows:
-\begin{align}
-\Delta u_i=u_i-u_i^*=&-R^{-1}_i\tilde{B}_i^TD_i^T\tilde{F}_iD_iz^f
-+R^{-1}_i\tilde{B}_i^TD_i^T\tilde{F}_iD_iz^*(t_f)\notag\\
-=&-R^{-1}_i\tilde{B}_i^TD_i^T\tilde{F}_iD_iz^f
-+R^{-1}_i\tilde{B}_i^TD_i^T\tilde{F}_iD_iz(t_f)
--R_i^{-1}\tilde{B}_iD_i^T\tilde{F}_i(d_i\otimes I_r)\Delta z_i(t_f)\notag\\
-=&-R^{-1}_i\tilde{B}_i^TD_i^T\tilde{F}_iD_i[z^f-z(t_f)]
--R_i^{-1}\tilde{B}_iD_i^T\tilde{F}_i(d_i\otimes I_r)\Delta
-z_i(t_f)\label{Deltaui},
-\end{align}
-Recalling (\ref{zf}) and (\ref{xtf1}), the value of $[z^f-z(t_f)]$ in the
-above equation can be obtained as
-\begin{align}
-z^f-z(t_f)=&\theta+\int^{t_f}_0W\theta\mbox{d}t\label{zfztf}
-\end{align}
-Substituting (\ref{Deltazitf1}) and (\ref{zfztf}) into (\ref{Deltaui}) yields
-\begin{align}
-\Delta u_i
-=&-R^{-1}_i\tilde{B}_i^TD_i^T\tilde{F}_iD_i \left(\theta+
-M_i\int^{t_f}_0W\theta\mbox{d}t\right)\notag\\
-\triangleq & -R^{-1}_i\tilde{B}_i^TD_i^T\tilde{F}_iD_iv_i,\label{Deltaui1}
-\end{align}
-where
-$v_i=\theta+ M_i\int^{t_f}_0W\theta\mbox{d}t$ and matrix $M_i$ is
-defined in (\ref{MiN}). 
-\end{proof}
-
-
-
-
-We now present the $\varepsilon$-Nash equilibrium for the proposed strategy
-(\ref{OpenLoopNashAlgorithm}) as the following theorem:
+The value of $\epsilon$ is to quantify the potential maximum benefit, i.e., decrease in performance index, if one player would like to unilaterally deviates from its equilibrium strategy. In case where $\epsilon=0$, the maximum benefit is zero and hence there is no incentive for players to deviate from the equilibrium, which is known as Nash equilibrium. Intuitively, the smaller $\epsilon$ is, the less incentive is and the closer $\epsilon$-Nash equilibrium will be to the original Nash equilibrium. In what follows, we show that $\hat{u}_1,\cdots,\hat{u}_N$ in (\ref{OpenLoopNashAlgorithm1}) form an $\epsilon$-Nash equilibrium
 \begin{thm}
 For the $N$-agent linear quadratic differential game of fixed duration $[0,t_f]$ defined by agents' dynamics (\ref{systemxi}) and performance indices (\ref{JiFormation}), if all eigenvalues of $(I+DL)$ has positive real parts, then the control strategies $\hat{u}_1,\cdots,\hat{u}_N$ in (\ref{OpenLoopNashAlgorithm})
 form an $\epsilon$-Nash equilibrium given
@@ -442,9 +283,10 @@ form an $\epsilon$-Nash equilibrium given
 \epsilon=\max\{\epsilon_1,\cdots,\epsilon_N\}\label{epsilon}
 \end{equation}
 where
-\begin{equation}
-\epsilon_i=\frac{2\|\tilde{F}_{Ri}\|_2\gamma_{\max} V(0)} {g\gamma_{\min}}(1-e^{-g\gamma_{\min}t_f}) +\frac{8\|\tilde{M}_i\|_2W_{\max}^2 \gamma_{\max}V(0) }{g^2\gamma^2_{\min}}(1-e^{-g\gamma_{\min}t_f/2})^2,\label{epsiloni}
-\end{equation}
+\begin{align}
+\epsilon_i=&\frac{2\|\tilde{F}_{Ri}\|_2\gamma_{\max} V(0)} {g\gamma_{\min}}(1-e^{-g\gamma_{\min}t_f}) \notag\\
+&+\frac{8\|\tilde{M}_i\|_2W_{\max}^2 \gamma_{\max}V(0) }{g^2\gamma^2_{\min}}(1-e^{-g\gamma_{\min}t_f/2})^2,\label{epsiloni}
+\end{align}
 scalars $\gamma_{\min}$, $\gamma_{\max}$, and $V(0)$ are defined in Lemma \ref{norminequality} with $\theta(0)=z^f(0)-M^{-1}z(0)$,
 \begin{subequations}
 \begin{align}
@@ -456,8 +298,8 @@ I_r)(I+S_{ii})^{-1}\tilde{F}_{ii}(I+S_{ii})^{-1}(d_i^T\otimes
 I_r)M\label{MFi},\\
 &\tilde{F}_{ii}=(d^T_i\otimes I_r)\tilde{F}_i(d_i\otimes I_r)\label{Fii},\\
 &M_i=I-(d_i\otimes I_r)(I+S_{ii})^{-1}(d_i^T\otimes I_r)M\label{MiN},\\
-&W_{\max}=\max_{0\leq t\leq t_f} \|W(t)\|_2, \quad
-W(t)=\sum^N_{j=1}\tilde{B}_jR^{-1}_j \tilde{B}_j^TD_j^T\tilde{F}_jD_j
+&W_{\max}=\max_{0\leq t\leq t_f} \|W(t)\|_2,\\
+&W(t)=\sum^N_{j=1}\tilde{B}_jR^{-1}_j \tilde{B}_j^TD_j^T\tilde{F}_jD_j
 \label{Wmax},
 \end{align}
 and matrix $S_{ii}$ is defined in (\ref{dSkd}).
@@ -466,60 +308,66 @@ and matrix $S_{ii}$ is defined in (\ref{dSkd}).
 \begin{proof}
 Finding $\epsilon$ that satisfies inequalities (\ref{epsilon1Nashinequality}) involves three steps. The first step is to obtain each agent's performance index value $J_i$ when all agents choose control strategies (\ref{OpenLoopNashAlgorithm}). The second step is to obtain the best performance index value $J_i^*$ each agent can achieve by unilaterally deviating from control strategy (\ref{OpenLoopNashAlgorithm}). The final step is to find $\epsilon_i$ such that $J_i\leq J_i^*+\epsilon_i$.
 
-As the first step, agent $i$'s performance index value $J_i$ under control strategy $\hat{u}_i$ can be expressed as
-\begin{equation}
-J_i=\frac{1}{2}\sum_{e_{ij}\in\mathcal{E}} \|y_i(t_f)-y_j(t_f)-\mu_{ij}\|^2_{F_{ij}} +\frac{1}{2}\int_{0}^{t_f} \|\hat{u}_i(t)\|^2_{R_i(t)}dt \label{JiJistar}
-\end{equation}
-
-As the second step, if all agents but agent $i$ chose strategy (\ref{OpenLoopNashAlgorithm}), the control strategy of agent $i$ based on (\ref{ulambda}) to achieve the best performance index value can be expressed as
+First, we denote $J_i$ as the value of (\ref{JiFormation}) under $\hat{u}_i$ in (\ref{OpenLoopNashAlgorithm}) for all $i$. Secondly, with all agents implementing strategy (\ref{OpenLoopNashAlgorithm}) expect $i$, the optimal control for agent $i$ derived from  (\ref{Nec}) is
 \begin{align}
 u^*_i(t)=&-R_i^{-1}B^T\lambda^*_i(t)\notag\\
 =&-R_i^{-1}B^T\Phi^T(t_f,t)\lambda^*_i(t_f)\notag\\
-=&-R_i^{-1}B^T\Phi^T(t_f,t)\left\{\sum_{e_{ij}\in\mathcal{E}} L_{ij}[x^*_i(t_f)-x_j(t_f)]-\mu_i\right\}\label{uibest1}
+=&-R_i^{-1}B^T\Phi^T(t_f,t)\{\notag\\
+&\sum_{e_{ij}\in\mathcal{E}} L_{ij}[x^*_i(t_f)-x_j(t_f)]-\mu_i\} \label{uibest1}
 \end{align}
 %=&-R_i^{-1}B^T\Phi^T(t_f,t)\left\{\sum_{e_{ij}\in\mathcal{E}} L_{ij}[x_i(t_f)-x_j(t_f)-\Delta x_i(t_f)]-\mu_i\right\}
-where $x^*_i(t_f)$ is agent $i$'s terminal state under strategy $u_i^*(t)$ in (\ref{uibest1}), $x_i(t_f)$ is agent $i$'s terminal state under strategy $\hat{u}_j$, and $x_i^*(t)=x_i(t)-\Delta x_i(t)$. Agent $i$'s performance index value $J_i^*$ under $u_i^*(t)$ can be expressed as
+where $x^*$ is the state corresponding to $u_i$, $x_j$ is the terminal state corresponding to $\hat{u}_j$. We use $\Delta u_i$ to quantify the difference between $u_i$ and $u^*_i$ as $\Delta x_i$ to quantify the difference between $x_i$ and $x^*_i$ as 
+\begin{align*}
+\Delta u_i=&u_i-u_i^*,\\
+\Delta x_i=&x_i - x_i^*.
+\end{align*} 
+Given
 \begin{align}
-J_i^*=&\frac{1}{2}\sum_{e_{ij}\in\mathcal{E}} \|y^*_i(t_f)-y_j(t_f)-\mu_{ij}\|^2_{F_{ij}} +\frac{1}{2}\int_{0}^{t_f} \|u^*_i(t)\|^2_{R_i(t)}dt\notag
+\Delta\dot{x}_i=&\dot{x}_i-\dot{x}_i^*\notag\\
+=&Ax_i+Bu_i-Ax_i^*-Bu^*_i\notag\\
+=&A\Delta x_i+ B\Delta u_i\notag
 \end{align}
-As the third step, the value of $J_i-J_i^*$ can be calculated as follows 
-\begin{align}
-J_i-J_i^*=&\frac{1}{2}\sum_{e_{ij}\in\mathcal{E}} [\|y_i(t_f)-y_j(t_f)-\mu_{ij}\|^2_{F_{ij}}-\|y_i^*(t_f)-y_j(t_f)-\mu_{ij}\|^2_{F_{ij}} ]\notag\\
-&+\frac{1}{2}\int_{0}^{t_f} [\|u_i(t)\|^2_{R_i(t)}-\|u_i^*(t)\|^2_{R_i(t)}]dt\notag\\
-=& \frac{1}{2}\sum_{e_{ij}\in\mathcal{E}} [y_i(t_f)-y^*_i(t_f)]^TF_{ij}[y_i(t_f)+y_i^*(t_f)-2y_j(t_f)-2\mu_{ij}]\notag\\
-&+\frac{1}{2}\int_{0}^{t_f}[u_i(t)-u_i^*(t)]R_i[u_i(t)+u^*_i(t)]dt\notag\\
-=& \frac{1}{2}\sum_{e_{ij}\in\mathcal{E}}\Delta x_i(t_f)^TC^TF_{ij}[C\Delta x_i(t_f)+2y_i^*(t_f)-2y_j(t_f)-2\mu_{ij}]\notag\\
-&+\frac{1}{2}\int^{t_f}_0\Delta u_i^TR_i(\Delta u_i+2 u_i^*)dt\notag\\
-=&\frac{1}{2}\sum_{e_{ij}\in\mathcal{E}}\Delta x_i(t_f)^TL_{ij}\Delta x_i(t_f)+\sum_{e_{ij}\in\mathcal{E}}\Delta x_i(t_f)^TC^TF_{ij}[y_i^*(t_f)-y_j(t_f)-\mu_{ij}]\notag\\
-&+\int^{t_f}_0\Delta u_i^TR_i u_i^*dt+\frac{1}{2}\int^{t_f}_0\Delta u_i^TR_i\Delta u_idt
-\label{JiJistar}
-\end{align}
-where $\Delta u_i(t)=u_i(t)-u_i^*(t)$. Since
-\begin{equation}
-\Delta\dot{x}_i=\dot{x}_i-\dot{x}_i^*=Ax_i+Bu_i-Ax_i^*-Bu^*_i=A\Delta x_i+ B\Delta u_i
-\end{equation}
-and $\Delta x_i(0)=x_i(0)-x^*_i(0)=0$, terminal value $\Delta x_i(t_f)$ can be expressed as
+and $\Delta x_i(0)=x_i(0)-x^*_i(0)=0$,  we have
 \begin{equation}
 \Delta x_i(t_f)=\int^{t_f}_0\Phi(t_f,t)B(t)\Delta u_i(t)\mbox{d}t\label{Deltaxi}
 \end{equation}
+Denoting $J^*_i$ as the value of (\ref{JiFormation}) under $u^*_i$ in (\ref{uibest1}), the difference $(J_i-J_i^*)$ can be expressed as
+\begin{align}
+J_i-J_i^*
+=&\frac{1}{2}\sum_{e_{ij}\in\mathcal{E}}\Delta x_i(t_f)^TL_{ij}\Delta x_i(t_f)\notag\\
+&+\sum_{e_{ij}\in\mathcal{E}}\Delta x_i(t_f)^TC^TF_{ij}[y_i^*(t_f)-y_j(t_f)-\mu_{ij}]\notag\\
+&+\int^{t_f}_0\left(\Delta u_i^TR_i u_i^*dt+\frac{1}{2}\Delta u_i^TR_i\Delta u_i\right)dt
+\label{JiJistar}
+\end{align}
 Substituting (\ref{uibest1}) and (\ref{Deltaxi}) into (\ref{JiJistar}) yields
 \begin{align}
-J_i-J_i^*=&\frac{1}{2}\Delta x^T_i(t_f)\left(\sum_{e_{ij}\in\mathcal{E}}L_{ij}\right)\Delta x_i(t_f)+\frac{1}{2}\int^{t_f}_0\Delta u_i^TR_i\Delta u_idt\label{Ji-Jistar},
+J_i-J_i^*=&\frac{1}{2}\Delta x^T_i(t_f)\sum_{e_{ij}\in\mathcal{E}}L_{ij}\Delta x_i(t_f)\notag\\
+&+\frac{1}{2}\int^{t_f}_0\Delta u_i^TR_i\Delta u_idt\label{Ji-Jistar},
 \end{align}
-which is always nonnegative. In order to find the upper bound of $(J_i-J_i^*)$, we need to find the value of $\Delta x_i(t_f)$ and $\Delta u_i$. Given the value of $\Delta z_i(t_f)$ in
-(\ref{Deltazitf1}) and $\Delta u_i$ in (\ref{Deltaui1}), the upper bound of
-$(J_i-J_i^*)$ can be derived from (\ref{Ji-Jistar}) as follows:
+which is always nonnegative as expected. The value of $\Delta x_i(t_f)$ and $\Delta u_i$ can be derived as 
 \begin{align}
-J_i-J_i^*=&\frac{1}{2} \Delta z_i^T(t_f)\tilde{F}_{ii}\Delta
-z_i(t_f)+\frac{1}{2}\int^{t_f}_0\Delta u^T_iR_i\Delta u_i\mbox{d}t\notag\\
-=&\frac{1}{2} \left(\int^{t_f}_0W\theta\mbox{d}t\right)^T M_{Fi}\left(\int^{t_f}_0W\theta\mbox{d}t\right) +\frac{1}{2}\int^{t_f}_0
+&\Delta x_i(t_f)=-(I+S_{ii})^{-1}(e_i^T\otimes
+I_r)M\int^{t_f}_0W\theta \mbox{d}t ,\label{Deltazitf1}\\
+&\Delta u_i
+=-R^{-1}_i\tilde{B}_i^TC_i^T\tilde{F}_iC_i \left(\theta+
+M_i\int^{t_f}_0W\theta\mbox{d}t\right),\label{Deltaui1}
+\end{align}
+where 
+\begin{align}
+S_{ii}=&(e_i^T\otimes I_r)S_iC_i^T\tilde{F}_i(e_i\otimes I_r)\label{dSkd}\\
+M=&I+W\otimes (R^{-1}L),\label{M}
+\end{align}
+Substituting (\ref{Deltazitf1}) and (\ref{Deltaui1}) into (\ref{Ji-Jistar}) yields:
+\begin{align}
+J_i-J_i^*
+=&\frac{1}{2} \left(\int^{t_f}_0W\theta\mbox{d}t\right)^T M_{Fi}\left(\int^{t_f}_0W\theta\mbox{d}t\right) \notag\\
+&+\frac{1}{2}\int^{t_f}_0
 v_i^T \tilde{F}_{Ri}v_i\mbox{d}t\label{JiJistar1}
 \end{align}
 where matrix $M_{Fi}$ is defined in (\ref{MFi}) and matrix $\tilde{F}_{Ri}$ is
 defined in (\ref{FRi}). Since
 \begin{align}
-\frac{1}{2}\int^{t_f}_0
-v_i^T \tilde{F}_{Ri}v_i\mbox{d}t=&\frac{1}{2}
+&\frac{1}{2}
 \int^{t_f}_0\left( \theta+M_i\int^{t_f}_0W\theta\mbox{d}t\right)^T \tilde{F}_{Ri}\left( \theta+M_i\int^{t_f}_0W\theta\mbox{d}t\right)\mbox{d}t
 \notag\\
 \leq&
@@ -535,12 +383,6 @@ J_i-J_i^*\leq&\int^{t_f}_0
 \end{align*}
 where matrix $\tilde{M}_i$ is defined in (\ref{tildeMi}) and $W_{\max}$ is defined in (\ref{Wmax}). Recalling Lemma \ref{norminequality}, substituting inequalities in (\ref{thetainequalitytotal}) into the above inequality yields (\ref{epsiloni}). The maximum value in $\{\varepsilon_1,\cdots,\varepsilon_N\}$ will satisfy the inequalities (\ref{epsiloninequality}). Therefore, online computing strategies (\ref{OpenLoopNashAlgorithm}) form an $\varepsilon$-Nash equilibrium.
 \end{proof}
-
-
-
-
-
-
 
 
 Note that as shown in (\ref{epsiloni}), it is clear that the value of
@@ -600,6 +442,33 @@ Therefore, the following implementation algorithm is proposed.
 \end{itemize}
 \end{Alg}
 
+As we can see, in order to make distributed open-loop Nash strategy estimation valid, all eigenvalues of matrix $(I+DL)$ need to have positive real parts. In general, this condition needs to be validated on a case by case basis based on agents' dynamics, performance indices, and graph connectivity. Nonetheless, there still exist several special cases where
+spectral property of $(I+DL)$ can be simply analyzed based on the structure of $D$ and $L$. These scenarios are summarized as follows.
+\begin{Pro}
+All eigenvalues of $(I+DL)$ have positive real parts if either of the following holds
+\begin{itemize}
+\item[(1)] Graph $\mathcal{G}$ is undirected and $F_{ij}=F_{ji}$ for all $e_{ij}\in\mathcal{E}$. 
+\item[(2)] Graph $\mathcal{G}$ is directed and weighting matrices for terminal state and control energy can be expressed as $F_{ij}=f_{ij}\bar{F}$ for all $e_{ij}\in\mathcal{E}$ and $R_i=r_i\bar{R}$ for all $i=1,\cdots,N$, respectively, where $f_{ij}$ and $d_i$ are positive scalars and matrix $\bar{F}$ and $\bar{R}$ are positive semi-definite.  
+\end{itemize} 
+\end{Pro}
+\begin{proof}
+For scenario (1), if graph $\mathcal{G}$ is undirected, matrix $L$ defined in (\ref{laplacian}) is positive semi-definite because
+\[x^TLx =\frac{1}{2}\sum_{e_{ij}\in\mathcal{E}}\|x_i-x_j\|^2_{C^TF_{ij}C}\geq 0.\]
+Since matrix $D$ is positive semi-definite, it can be written as $D=D^T_sD_s$. Moreover, eigenvalues of $DL=D_s^TD_sL$ are equivalent to these of $D_sLD_s^T$ using the fact that $E_1E_2$ and $E_2E_1$ have the same eigenvalues for square matrix $E_1$ and $E_2$. Since $D_sLD_s^T$ is positive semi-definite, product $DL$ has non-negative eigenvalues and hence eigenvalues of $(I+DL)$ are positive. 
+
+For scenario (2), if $F_{ij}=f_{ij}\bar{F}$, matrix weighted Laplacian matrix $L$ can be expressed as $L=\bar{L}\otimes \bar{F}$ where $\bar{L}$ is the conventional scalar weighted Laplacian matrix for graph $\mathcal{G}$ with weights $f_{ij}$ on edge $e_{ij}\in\mathcal{E}$. If $R_i=r_i\bar{R}$, block matrix $D$ can be written as $D=diag\{r_1,\cdots,r_N\}\otimes \bar{D}$ where $\bar{D}$ denotes the result of (\ref{Di}) when $R_i=r_i\bar{R}$. Therefore, product $(I+DL)$ can be expressed as
+\begin{align}
+I+DL=&I+(diag\{r_1,\cdots,r_N\}\otimes \bar{D})(\bar{L}\otimes \bar{F})\notag\\
+=&I+\bar{L}_r\otimes(\bar{D}\bar{F})\notag,
+\end{align}
+where $\bar{L}_r=diag\{r_1,\cdots,r_N\}\bar{L}$. As shown previously, product $\bar{D}\bar{F}$ has non-negative eigenvalues because $\bar{D}$ and $\bar{F}$ are both positive semi-definite. Moreover, it is well known that all eigenvalues of scalar weighted Laplacian matrix $\bar{L}$ or $\bar{L}_d$ have non-negative real parts parts. Therefore, according to its spectrum property, Kronecker product $\bar{L}_r\otimes(\bar{D}\bar{F})$ has non-negative real parts and hence eigenvalues of $(I+DL)$ have positive real parts.
+\end{proof}
+
+Physical interpretations of the above two scenarios are given as follows: In scenario (1), communication between two connected agents on the graph is bidirectional and these pair of agents have the common weighting matrix ($F_{ij}=F_{ji}$) associated with their terminal output variable difference. In scenario (2), communication between two connected agents on the graph is directional and all agents in fact choose weighting scalars $f_{ij}$ and $r_i$ (instead of matrices) associated with their terminal output variable difference and control energy. 
+
+
+\section{Extension to Closed-Loop Nash}
+In the above section, we have discussed how to implement open-loop Nash strategy in a distributed manner. However, it is more practical in real life application to find a feedback strategy in case of any state change in the course of game process. If the any state changes, continue using previously designed open-loop Nash strategy might not form a Nash equilibrium now.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Illustrative Example}\label{simulation}
@@ -823,6 +692,158 @@ As we can clearly see in the table, the agents can actually achieve lower format
                                   % sure that you do not shorten the textheight too much.
 %
 %Appendixes should appear before the acknowledgment.
+
+\appendix
+
+First of all, we present the following lemmas:
+\begin{Lem}\label{LemmaEigen}
+All eigenvalues of $S_{ii}$ in (\ref{dSkd}) have nonnegative real parts.
+\end{Lem}
+\begin{proof}
+Substituting (\ref{Sk}) into (\ref{dSkd}) yields
+\begin{align*}
+S_{ii}
+&=(e_i^T\otimes I_r) \int^{t_f}_0
+B'_iR_i^{-1}(B'_i)^T \mbox{d}t
+D_j^T\tilde{F}_j(e_i\otimes I_k).
+\end{align*}
+Due to the definition of $D_j$ in (\ref{Di}) and $\tilde{B}_j=(d_j\otimes
+I_r)B'_j$, the above equation becomes
+\begin{align*}
+S_{jj}=\underbrace{\int^{t_f}_0 B'_j(t)R_j^{-1}(t)(B'_j)^T(t)\mbox{d}t}_a
+\underbrace{ (d_j^T\otimes I_r)\tilde{F}_j(d_j\otimes I_k)}_b.
+\end{align*}
+Since both term $a$ and term $b$ are positive semi-definite, all the
+eigenvalues of matrix $S_{jj}$ have nonnegative real parts.
+\end{proof}
+
+\begin{Lem}\label{norminequality}
+If $(-M)$ is Hurwitz for matrix $M$ defined in (\ref{M}), supposing that matrix $P$ is the unique positive definite solution to the Lyapunov equation
+\begin{equation}
+-M^TP-PM=-I,\label{lyapunov}
+\end{equation}
+then for linear system
+\begin{equation}
+\dot{\theta}=-gM\theta\label{theta}\\
+\end{equation}
+with the initial state $\theta(0)$, the inequalities
+\begin{subequations}\label{thetainequalitytotal}
+\begin{align}
+&\int^{t_f}_0\|\theta\|_2^2\mbox{d}t\leq \frac{2\gamma_{\max}V(0)}{g\gamma_{\min}} (1-e^{-g\gamma_{\min}t_f}),\label{thetainequality2}\\
+&\int^{t_f}_0\|\theta\|_2\mbox{d}t\leq  \frac{2\sqrt{2\gamma_{\max}V(0)}}{g\gamma_{\min}} (1-e^{-g\gamma_{\min}t_f/2})\label{thetainequality}.
+\end{align}
+\end{subequations}
+hold, where $\|\cdot\|_2$ stand for Euclidean norm, $V(0)=1/2\theta^T(0)P\theta(0)$, $\gamma_{\min}=1/\lambda_{\max}(P)$, $\lambda_{\max}(P)$ is the largest eigenvalue of matrix $P$, $\gamma_{\max}=1/\lambda_{\min}(P)$, and $\lambda_{\min}(P)$ is the smallest eigenvalue of matrix $P$.
+\end{Lem}
+\begin{proof}
+If matrix $(-M)$ is Hurwitz, we consider the quadratic Lyapunov function $V=1/2\theta^TP\theta$ for system (\ref{theta}), where matrix $P$ is the solution to the Lyapunov equation (\ref{lyapunov}). The derivative of the Lyapunov function along the trajectory of system (\ref{theta}) is
+\[\dot{V}=\frac{1}{2}\theta^T(-gM^TP-gPM)\theta= -\frac{g}{2}\|\theta\|^2_2\leq -\frac{g}{2\lambda_{\max}(P)}\theta^TP\theta= -g\gamma_{\min} V\]
+where the last inequality is due to the property $\theta^TP\theta\leq \lambda_{\max}(P)\|\theta\|_2^2$. The above differential inequality yields
+\begin{align*}
+&\frac{1}{2}\lambda_{\min}(P)\|\theta\|_2^2\leq \frac{1}{2}\theta^TP\theta=V(t)\leq e^{ -g\gamma_{\min} t}V(0)\quad
+\Longrightarrow\quad \|\theta\|^2_2\leq 2\gamma_{\max}e^{ -g\gamma_{\min} t}V(0).
+\end{align*}
+Therefore, integrating the above inequality from $0$ to $t_f$ yields (\ref{thetainequality2}) and the square root of the above inequality from $0$ to $t_f$ yields (\ref{thetainequality}).
+\end{proof}
+
+\begin{Lem}
+Under strategy , $\Delta x_i$ can be expressed as
+\end{Lem}
+\begin{proof}
+Since $\Delta x_i(t_f)=x_i(t_f)-x_i^*(t_f)$, we need to find expressions for both $x_i(t_f)$ and $x_i^*(t_f)$. For $x_i(t_f)$, we solve differential equation (\ref{stacked}) as
+\[\dot{x}_{f}(\tau)=G\left\{[I_N\otimes\Phi(t_f,0)]x(0)-(I+DL)x_f(\tau)+D\mu\right\},\]
+\begin{equation}
+z^f(t)=M^{-1}z(0)+\theta(t).\label{zfsolution}
+\end{equation}
+where $\theta(t)$ is defined in (\ref{theta}) with the initial state $\theta(0)=z^f(0)-M^{-1}z(0)$. The system dynamics
+(\ref{dynamiczi}) when every agent chooses strategy
+(\ref{OpenLoopNashAlgorithm2}) becomes
+\begin{equation}
+\dot{z}= -\sum^N_{j=1}\tilde{B}_jR^{-1}_j\tilde{B}_j^T
+D_i^T\tilde{F}_jD_jz^f\triangleq -Wz^f\label{zdotzf}
+\end{equation}
+where $W$ is defined in (\ref{Wmax}). Substituting (\ref{zfsolution}) into
+(\ref{zdotzf}) yields
+\begin{equation}
+\dot{z}=-WM^{-1}z(0)-W\theta.  \label{zdotzfz0}
+\end{equation}
+Since
+\[\int^{t_f}_0W\mbox{d}t=\sum^N_{j=1}S_jF_j\]
+where matrices $F_j$ and $S_j$ are defined in (\ref{Fi}) and (\ref{Sk}),
+integrating equation (\ref{zdotzfz0}) from $0$ to $t_f$ yields
+\begin{equation}
+z(t_f)=\left(I-\sum^N_{j=1}S_jF_jM^{-1}\right)z(0)
+-\int^{t_f}_0W\theta\mbox{d}t. \label{xtf}
+\end{equation}
+Recalling the definition of matrix $M$ in (\ref{M}), we have
+\[\left(I+\sum^N_{j=1}S_jF_j\right)M^{-1} =I\quad\Longrightarrow\quad
+M^{-1}=I-\sum^N_{j=1}S_jF_jM^{-1}.\]
+Hence, equation (\ref{xtf}) becomes
+\begin{equation}
+z(t_f)=M^{-1}z(0) -\int^{t_f}_0W\theta\mbox{d}t. \label{xtf1}
+\end{equation}
+%and
+%\[x_j(t_f)=(d_i^T\otimes I_n)(I+S)^{-1}x(0)-(d_i^T\otimes
+%I_n)\int^{t_f}_0We^{-K(I+S)t}\mbox{d}t[\alpha(0)-(I+S)^{-1}x(0)]\]
+Second, substituting $u^*_i$ in (\ref{uibest}) into (\ref{zidot}) yields
+\[\dot{z}^*_i=-(d_i^T\otimes
+I_r)\tilde{B}_iR_i^{-1}\tilde{B}_i^TD_i^T\tilde{F}_i \left[
+D_iz(t_f)-(d_i\otimes I_r)\Delta z_i(t_f)\right]\]
+Integrating the above equation from $0$ to $t_f$ yields
+\begin{align*}
+z_i^*(t_f)=&z_i(0)-(d_i^T\otimes I_r)S_iD_i^T\tilde{F}_i\left[
+D_iz_i(t_f)-(d_i\otimes I_r)\Delta z_i(t_f)\right]\\
+=&z_i(0)+S_{ii}\Delta z_i(t_f)-(d_i^T\otimes I_r)S_iF_iz(t_f)
+\end{align*}
+where $S_{ii}$ is as defined in (\ref{dSkd}). Therefore, substituting the
+above equation into the expression of $\Delta z_i(t_f)$ yields
+\begin{align*}
+\Delta z_i(t_f)=&z_i(t_f)-z_i^*(t_f)=z_i(t_f)-z_i(0)-S_{ii}\Delta
+z_i(t_f)+(d_i^T\otimes I_r)S_iF_iz(t_f)
+\end{align*}
+After some manipulations, we arrive at
+\begin{align*}
+(I+S_{ii})\Delta z_i(t_f)=&(d_i^T\otimes I_n)[Mz(t_f)-z(0)]
+\end{align*}
+As we showed in Lemma \ref{LemmaEigen}, all the eigenvalues of $S_{ii}$ in the
+right hand side of the above equation have nonnegative real parts and hence
+matrix $(I+S_{ii})$ is invertible. Therefore,
+\begin{equation}
+\Delta z_i(t_f)=(I+S_{ii})^{-1}(d_i^T\otimes I_r)\left[Mz(t_f)-z(0)\right]
+\label{Deltazitf}
+\end{equation}
+Therefore, substituting (\ref{xtf1}) into (\ref{Deltazitf}) yields the value
+of $\Delta z_i(t_f)$ as follows:
+
+\end{proof}
+
+
+\begin{Lem}
+$\Delta u_i$
+\end{Lem}
+\begin{proof}
+The value of $\Delta u_i$ obtained as follows:
+\begin{align}
+\Delta u_i=u_i-u_i^*=&-R^{-1}_i\tilde{B}_i^TD_i^T\tilde{F}_iD_iz^f
++R^{-1}_i\tilde{B}_i^TD_i^T\tilde{F}_iD_iz^*(t_f)\notag\\
+=&-R^{-1}_i\tilde{B}_i^TD_i^T\tilde{F}_iD_iz^f
++R^{-1}_i\tilde{B}_i^TD_i^T\tilde{F}_iD_iz(t_f)
+-R_i^{-1}\tilde{B}_iD_i^T\tilde{F}_i(d_i\otimes I_r)\Delta z_i(t_f)\notag\\
+=&-R^{-1}_i\tilde{B}_i^TD_i^T\tilde{F}_iD_i[z^f-z(t_f)]
+-R_i^{-1}\tilde{B}_iD_i^T\tilde{F}_i(d_i\otimes I_r)\Delta
+z_i(t_f)\label{Deltaui},
+\end{align}
+Recalling (\ref{zf}) and (\ref{xtf1}), the value of $[z^f-z(t_f)]$ in the
+above equation can be obtained as
+\begin{align}
+z^f-z(t_f)=&\theta+\int^{t_f}_0W\theta\mbox{d}t\label{zfztf}
+\end{align}
+Substituting (\ref{Deltazitf1}) and (\ref{zfztf}) into (\ref{Deltaui}) yields
+\[\triangleq  -R^{-1}_i\tilde{B}_i^TD_i^T\tilde{F}_iD_iv_i\]
+where
+$v_i=\theta+ M_i\int^{t_f}_0W\theta\mbox{d}t$ and matrix $M_i$ is
+defined in (\ref{MiN}). 
+\end{proof}
 
 %\section*{ACKNOWLEDGMENT}
 
